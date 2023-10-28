@@ -10,23 +10,23 @@ import numpy as np
 class SGD_regressor():
 
     def __init__(self):
-        self.fit_intercept_ = False
+        self.fit_intercept = False
         self.beta_hat_ = 0
-        self.beta_zero_ = 0
-        self.iters_ = 0
-        self.intercept_ = 0
-        self.Id_shape_ = 0
-        self.phi_ = 0
+        self.beta_zero = 0
+        self.iters = 0
+        self.intercept = 0
+        self.Id_shape = 0
+        self.phi = 0
 
     def __repr__(self):
         print("Custom SGD regressor object. \n")
         print("""
                 Attributes:
                         beta_hat_ -> Lowest possible error for this system of matrices. Same as SciKitLearn's .coef_ attribute.
-                        iters_ -> A tuple containing alpha value and number of iterations taken to fit the regressor to this system, if beta_hat has been reached.
-                        intercept_ -> Independent term in decision function. Not used if the data is centered. Set to false by default.
-                        Id_shape_ -> Shape of beta vector we are trying to minimize.
-                        phi_ -> Regularization coefficient. Set to 0.5 by default.
+                        iters -> A tuple containing alpha value and number of iterations taken to fit the regressor to this system, if beta_hat has been reached.
+                        intercept -> Independent term in decision function. Not used if the data is centered. Set to false by default.
+                        Id_shape -> Shape of beta vector we are trying to minimize.
+                        phi -> Regularization coefficient. Set to 0.5 by default.
                 Methods: 
                         beta_hat(X, Y, phi) -> Used to determine beta_hat value and set the class attribute.
                         _SGD_loss() -> Calculates the loss/error at each step of execution.
@@ -43,13 +43,14 @@ class SGD_regressor():
 
             Once SGD_regressor object is fit on a system of matrices, update the instance's beta_hat_ attribute member.
         '''
+        n = Y.shape[0]
         Xt = np.transpose(X)
-        inverse_term =  np.linalg.inv ((1/n) * np.matmul(Xt,X) + phi * np.eye(self.Id_shape_))
+        inverse_term =  np.linalg.inv ((1/n) * np.matmul(Xt,X) + phi * np.eye(self.Id_shape))
         XtY =  np.matmul(Xt,Y)
         beta_hat = (1/n) * np.matmul(inverse_term, XtY)
-        print("Beta-hat : ", beta_hat)
+        #print("Beta-hat : ", beta_hat)
         self.beta_hat_ = beta_hat
-        self.beta_zero_ = np.ones(self.Id_shape_)
+        self.beta_zero = np.ones(self.Id_shape)
     
     # Assert this is equal to SKLearn's beta_hat estimator.
     
@@ -65,11 +66,11 @@ class SGD_regressor():
     def SGD_grad(self, X, Y, alpha, epochs):
         # Don't need betas history
         sgd_deltas_history = []
-        beta = self.beta_zero_
+        beta = self.beta_zero
         beta_hat = self.beta_hat_
-        phi = self.phi_
+        phi = self.phi
         max_index = X.shape[0]
-        if (self.fit_intercept_):
+        if (self.fit_intercept):
             # This is a fair amount of work with centering the data during the fitting process. Todo.
             print("This feature hasn't been implemented yet.")
         else:
@@ -99,11 +100,12 @@ class SGD_regressor():
             fit_intercept -> True or False.
             epochs -> The number of epochs the iteration should step through, if the beta_hat (ideal result) has not been achieved yet.
         '''
-        self.phi_ = phi
-        self.fit_intercept_ = fit_intercept
+        self.phi = phi
+        self.fit_intercept = fit_intercept
         # First, find the ideal error.
-        self.Id_shape_ = X.shape[1]
+        self.Id_shape = X.shape[1]
         self.beta_hat(self, X, Y, phi)
+        print("Predicted beta-hat (lowest possible error via closed form solution) : ", self.beta_hat_)
         # Attribute member beta_zeros_ has been set now.
         # Beta can be safely modified, but beta_zero cannot.
         beta, deltas_history = self.SGD_grad(X, Y, alpha, epochs)
