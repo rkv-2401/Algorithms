@@ -34,7 +34,8 @@ class SGD_regressor():
                         phi -> Regularization coefficient. Set to 0.5 by default.
                 Methods: 
                         beta_hat(X, Y, phi) -> Used to determine beta_hat value and set the class attribute.
-                        _SGD_loss() -> Calculates the loss/error at each step of execution.
+                        SGD_loss() -> Calculates the loss/error at each step of execution.
+                        ...to be contd.
               """)
 
     # This function determines the closed inverse form of beta-hat (the lowest possible error -> inherent bias)
