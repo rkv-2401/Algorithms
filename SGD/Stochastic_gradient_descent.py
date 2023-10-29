@@ -1,11 +1,16 @@
 '''
     A program to implement the Stochastic Gradient Descent algorithm by hand.
-    CLASS USAGE - 
+    DEFINITIONS - 
     Beta -> Vector of targets, i.e. error/loss at current point of iteration
-    Beta_hat -> Ideal loss, the lowest possible error for this system of matrices when solved by Ridge Regression. 
+    Beta_hat -> Ideal loss, the lowest possible error for this system of matrices when solved by Ridge Regression.
+    ..to be contd. 
 '''
 import sys
 import numpy as np
+import pandas as pd
+import sklearn
+from sklearn.preprocessing import StandardScaler
+from sklearn.model_selection import train_test_split
 
 class SGD_regressor():
 
@@ -48,13 +53,11 @@ class SGD_regressor():
         inverse_term =  np.linalg.inv ((1/n) * np.matmul(Xt,X) + phi * np.eye(self.Id_shape))
         XtY =  np.matmul(Xt,Y)
         beta_hat = (1/n) * np.matmul(inverse_term, XtY)
-        #print("Beta-hat : ", beta_hat)
         self.beta_hat_ = beta_hat
         self.beta_zero = np.ones(self.Id_shape)
     
-    # Assert this is equal to SKLearn's beta_hat estimator.
+    # Assert this (self.beta_hat_) is equal to SKLearn's beta_hat estimator.
     
-    # This could be a staticmethod if we also pass in phi as an argument.
     @staticmethod
     def SGD_loss(X, Y, phi, beta):
         n = Y.shape[0]
@@ -64,7 +67,7 @@ class SGD_regressor():
         return loss
 
     def SGD_grad(self, X, Y, alpha, epochs):
-        # Don't need betas history
+        # Unlike regular gradient descent, we don't need betas history
         sgd_deltas_history = []
         beta = self.beta_zero
         beta_hat = self.beta_hat_
@@ -116,8 +119,37 @@ regressor = SGD_regressor()
 potential_alphas = [0.000001, 0.000005, 0.00001, 0.00005, 0.0001, 0.0005, 0.001, 0.006, 0.02]
 
 # To do - loop through all alphas without creating separate objects for each regressor
+
+###
+# Now to put the dataset itself here. Center it, etc.
+# This will eventually be in a different function or file, because it's not part of the library itself..
+
+# Part of test case - check that loss goes down as expected with increase in alpha
 alpha = potential_alphas[-3]
 
-# Now to put the dataset itself here. Center it, etc.
+carSeats = pd.read_csv('CarSeats.csv')
 
-regressor.fit(X, Y, alpha, epochs = 5)
+catCols = carSeats.select_dtypes("object").columns
+carSeats.drop(columns = catCols, inplace = True)
+
+# This is the target variable, 'Y'.
+targetCol = carSeats['Sales']
+numCols = carSeats.select_dtypes("number").columns
+
+# Deep copy
+trainCols = carSeats.copy()
+Y = trainCols['Sales']
+x = trainCols.drop(columns = "Sales")
+
+scaler = StandardScaler()
+scaler.fit(x)
+scaledX = scaler.transform(x)
+# This is centering the dataset.
+Y = Y.mean()
+
+print(f"Means of features : {scaledX.mean(axis=0)}")
+print(f"Variances of all features : {scaledX.var(axis=0)}")
+
+X_train, X_test, y_train, y_test = train_test_split(scaledX, Y, test_size = 0.5, shuffle = False)
+
+regressor.fit(X_train, y_train, alpha, epochs = 5)
